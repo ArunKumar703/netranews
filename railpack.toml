@@ -1,0 +1,5 @@
+[build]
+nixpacks.pkgManager = "pip"
+
+[start]
+cmd = "python news_api.py"
