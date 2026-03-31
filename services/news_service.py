@@ -182,12 +182,26 @@ def get_news_by_category(category: str, limit: int = 5, lang: str = "en") -> Lis
                     all_articles.extend(res_list)
     else:
         urls = CATEGORY_SOURCES.get(category_id, [])
-        if not urls:
-            return []
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            results = list(executor.map(lambda u: fetch_source_articles(u, limit=limit, lang='en'), urls))
-            for res_list in results:
-                all_articles.extend(res_list)
+        if urls:
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                results = list(executor.map(lambda u: fetch_source_articles(u, limit=limit, lang='en'), urls))
+                for res_list in results:
+                    if res_list:
+                        all_articles.extend(res_list)
+        
+        # Robust Fallback: If category sources are blocked or empty, search Google News in English
+        if not all_articles:
+            keyword = CATEGORY_KEYWORDS.get(category_id, category_id)
+            from urllib.parse import quote
+            keyword_encoded = quote(keyword)
+            rss_url = f"https://news.google.com/rss/search?q={keyword_encoded}&hl=en&gl=IN&ceid=IN:en"
+            feed = feedparser.parse(rss_url)
+            links = [entry.link for entry in feed.entries[:limit]]
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                results = list(executor.map(lambda u: fetch_source_articles(u, limit=1, lang='en'), links))
+                for res_list in results:
+                    if res_list:
+                        all_articles.extend(res_list)
     
     # Filtering and Deduplication
     seen = set()
