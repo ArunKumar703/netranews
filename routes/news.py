@@ -17,7 +17,16 @@ async def fetch_news(category: str, lang: str = Query("en"), limit: int = Query(
     """
     articles = get_news_by_category(category, limit=limit, lang=lang)
     if not articles:
-        raise HTTPException(status_code=404, detail=f"No articles found for category: {category} in language: {lang}")
+        # Provide more context in the error response for debugging
+        raise HTTPException(
+            status_code=404, 
+            detail={
+                "error": "No articles extracted",
+                "category": category,
+                "language": lang,
+                "msg": f"Failed to fetch or parse news for '{category}'. The source may be blocking the connection or the feed is empty."
+            }
+        )
     
     return {
         "category": category,
