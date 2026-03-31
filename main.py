@@ -34,6 +34,22 @@ async def root():
         }
     }
 
+@app.get("/test-fetch")
+async def test_fetch():
+    import feedparser
+    import requests
+    target = "https://zeenews.india.com/rss/india-national-news.xml"
+    try:
+        r = requests.get(target, timeout=5, headers={'User-Agent': 'Mozilla/5.0'})
+        feed = feedparser.parse(target)
+        return {
+            "status": r.status_code,
+            "feed_title": feed.feed.get('title'),
+            "entries_count": len(feed.entries)
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
