@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 newspaper3k
+lxml
 lxml_html_clean
 pydantic
 requests
@@ -9,3 +10,4 @@ python-dotenv
 slowapi
 feedparser
 deep-translator
+nltk
