@@ -111,12 +111,24 @@ def process_one_article(article_obj: newspaper.Article, source_name: str) -> Dic
         return None
 
 def fetch_source_articles(source_url: str, limit: int = 5, lang: str = 'en') -> List[Dict]:
-    """Uses newspaper to discover and process articles with better URL handling."""
+    """Uses newspaper to discover and process articles with native RSS and XML support."""
     try:
         config = newspaper.Config()
         config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
-        config.request_timeout = 10
+        config.request_timeout = 15
         
+        # 0. Handle RSS/XML Directly
+        if source_url.endswith('.xml') or 'rss' in source_url.lower():
+            import feedparser
+            feed = feedparser.parse(source_url)
+            articles = []
+            for entry in feed.entries[:limit]:
+                article_obj = newspaper.Article(entry.link, language=lang, config=config)
+                processed = process_one_article(article_obj, "RSS Feed")
+                if processed:
+                    articles.append(processed)
+            return articles
+
         # Follow redirect if it's a Google News link or similar
         import requests
         try:
