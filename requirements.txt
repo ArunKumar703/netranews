@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+newspaper3k
+lxml_html_clean
+pydantic
+requests
+httpx
+python-dotenv
+slowapi
+feedparser
+deep-translator
